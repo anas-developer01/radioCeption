@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiShield, FiCheckCircle, FiUser, FiFileText, FiGlobe, FiRefreshCw } from 'react-icons/fi';
+import { FiShield, FiCheckCircle, FiFileText, FiGlobe, FiRefreshCw } from 'react-icons/fi';
 
 const Certifications = () => (
   <div className="cert-root">

@@ -54,7 +54,7 @@ const SuperAdminDashboardHome = () => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [fetchDashboardData]);
 
   const checkSystemAlerts = () => {
     const alerts = [];

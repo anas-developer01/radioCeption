@@ -1,7 +1,8 @@
 
 
-import React from 'react';
+
 import { FiMail, FiGithub, FiLinkedin, FiGlobe } from 'react-icons/fi';
+
 import '../styles/main.css';
 
 const Footer = () => {

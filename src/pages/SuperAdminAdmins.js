@@ -45,7 +45,7 @@ const SuperAdminAdmins = () => {
 
   useEffect(() => {
     fetchAdmins();
-  }, []);
+  }, [fetchAdmins]);
 
   const calculateStats = (adminsList) => {
     const total = adminsList.length;
