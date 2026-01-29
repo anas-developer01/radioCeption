@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import API_BASE_URL from '../utils/apiConfig';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -18,7 +18,7 @@ const SuperAdminAdmins = () => {
 
 
   // Fetch admins from /api/Users
-  const fetchAdmins = async () => {
+  const fetchAdmins = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/api/Users`);

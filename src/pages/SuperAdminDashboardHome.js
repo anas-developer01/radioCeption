@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StatCard, AlertsCard } from '../components/DashboardComponents';
 import axios from 'axios';
 import API_BASE_URL from '../utils/apiConfig';
@@ -20,7 +20,7 @@ const SuperAdminDashboardHome = () => {
   const [systemAlerts, setSystemAlerts] = useState([]);
 
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/api/SuperAdminDashboard/dashboard`);
@@ -50,7 +50,7 @@ const SuperAdminDashboardHome = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchDashboardData();
