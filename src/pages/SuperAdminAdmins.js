@@ -41,7 +41,7 @@ const SuperAdminAdmins = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchAdmins();
