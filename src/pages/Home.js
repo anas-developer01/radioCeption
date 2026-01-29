@@ -1,12 +1,14 @@
-
 import React from 'react';
+import ParticlesBackground from '../components/ParticlesBackground';
 import { FaUserPlus, FaUpload, FaListOl, FaRobot, FaFilePdf, FaCheckCircle } from 'react-icons/fa';
+import ModernContactUs from '../components/ModernContactUs';
+import FAQSection from '../components/FAQSection'; 
 
-
-
-
-const Home = () => (
-  <div className="home-root">
+const Home = () => { 
+  return (
+    <>
+      <ParticlesBackground />
+      <div className="home-root">
     {/* Hero Section */}
     <section className="home-hero improved-hero modern-home-hero">
       <div className="improved-hero-inner">
@@ -26,36 +28,31 @@ const Home = () => (
 
     <section className="home-section home-how">
       <h3 className="how-title">How It Works</h3>
-      <div className="home-cards improved-how-cards">
-        <div className="home-card improved-how-card">
-          <span className="home-card-icon"><FaUserPlus /></span>
-          <span className="home-card-num">1</span>
-          <b>Register & Subscribe</b>
-          <p>Sign up and choose a subscription plan to access the platform.</p>
+      <div className="how-cards-horizontal">
+        <div className="how-card">
+          <div className="how-card-icon-wrap"><FaUserPlus className="how-card-icon" /></div>
+          <h4 className="how-card-title">Register & Subscribe</h4>
+          <p className="how-card-desc">Sign up and choose a subscription plan to access the platform.</p>
         </div>
-        <div className="home-card improved-how-card">
-          <span className="home-card-icon"><FaUpload /></span>
-          <span className="home-card-num">2</span>
-          <b>Upload Radiographic Images</b>
-          <p>Upload X-ray, CT-Scan, MRI, PET-Scan, or Ultrasound images securely.</p>
+        <div className="how-card">
+          <div className="how-card-icon-wrap"><FaUpload className="how-card-icon" /></div>
+          <h4 className="how-card-title">Upload Radiographic Images</h4>
+          <p className="how-card-desc">Upload X-ray, CT-Scan, MRI, PET-Scan, or Ultrasound images securely.</p>
         </div>
-        <div className="home-card improved-how-card">
-          <span className="home-card-icon"><FaListOl /></span>
-          <span className="home-card-num">3</span>
-          <b>Select Scan Type</b>
-          <p>Choose the scan type for accurate AI analysis.</p>
+        <div className="how-card">
+          <div className="how-card-icon-wrap"><FaListOl className="how-card-icon" /></div>
+          <h4 className="how-card-title">Select Scan Type</h4>
+          <p className="how-card-desc">Choose the scan type for accurate AI analysis.</p>
         </div>
-        <div className="home-card improved-how-card">
-          <span className="home-card-icon"><FaRobot /></span>
-          <span className="home-card-num">4</span>
-          <b>AI-Powered Report</b>
-          <p>MedGemma analyzes your image and generates a detailed report in seconds.</p>
+        <div className="how-card">
+          <div className="how-card-icon-wrap"><FaRobot className="how-card-icon" /></div>
+          <h4 className="how-card-title">AI-Powered Report</h4>
+          <p className="how-card-desc">MedGemma analyzes your image and generates a detailed report in seconds.</p>
         </div>
-        <div className="home-card improved-how-card">
-          <span className="home-card-icon"><FaFilePdf /></span>
-          <span className="home-card-num">5</span>
-          <b>Download as PDF</b>
-          <p>Instantly download your report in PDF format.</p>
+        <div className="how-card">
+          <div className="how-card-icon-wrap"><FaFilePdf className="how-card-icon" /></div>
+          <h4 className="how-card-title">Download as PDF</h4>
+          <p className="how-card-desc">Instantly download your report in PDF format.</p>
         </div>
       </div>
     </section>
@@ -71,12 +68,13 @@ const Home = () => (
       </ul>
     </section>
 
-    <section className="home-section home-cta-section improved-cta-section">
-      <div className="home-cta-card improved-cta-card">
-        <b>Start your free trial today and experience the future of radiology with <span>MedGemma!</span></b>
+
+    <ModernContactUs />
+    <FAQSection />
+
       </div>
-    </section>
-  </div>
-);
+    </>
+  );
+}
 
 export default Home;
