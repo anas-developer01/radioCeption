@@ -17,7 +17,7 @@ const Home = () => {
           <h1 className="improved-hero-title">Smarter Radiology with <span>MedGemma</span></h1>
           <p className="improved-hero-lead">
             Empowering radiologists and healthcare providers with <b>advanced, AI-powered radiographic image analysis</b>.<br />
-            Instantly generate accurate reports, improve diagnostic confidence, and streamline your workflow.
+            Instantly validate your reports, improve diagnostic confidence, and streamline your workflow.
           </p>
           <div className="improved-hero-btn-row">
             <a href="/register" className="improved-hero-btn modern-hero-btn">Start Free Trial</a>
