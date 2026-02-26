@@ -2285,6 +2285,7 @@ button[type="submit"].btn.btn-primary:hover {
 }
 .improved-benefits-section {
   margin-top: 0;
+    margin-bottom: 64px;
 }
 .improved-benefits-title {
   font-size: 2rem;
