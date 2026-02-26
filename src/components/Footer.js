@@ -18,6 +18,14 @@ const Footer = () => {
               <h3 style={{margin: 0}}>Radioception</h3>
             </div>
             <p>Smarter Radiology with MedGemma.<br />AI-powered radiographic image analysis.</p>
+            <div style={{marginTop: 6}}>
+              <div style={{color: '#e3e9f6', fontSize: '0.95rem', opacity: 0.8}}>
+                <strong>Address:</strong> Mac height, H-sector Bahria Enclave Islamabad
+              </div>
+              <div style={{color: '#e3e9f6', fontSize: '0.95rem', opacity: 0.8}}>
+                <strong>Phone:</strong> <a href="tel:+923365859359" style={{color: '#e3e9f6', textDecoration: 'none'}}>+92 336 5859359</a>
+              </div>
+            </div>
           </div>
           <div className="split-footer-center">
             <ul className="split-footer-links">
