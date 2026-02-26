@@ -24,7 +24,10 @@ const Home = () => {
           </div>
         </div>
       </div>
+
     </section>
+    {/* Spacer for clear gap between Why Choose Radioception and next section */}
+    <div style={{height: '36px'}}></div>
 
     <section className="home-section home-how">
       <h3 className="how-title">How It Works</h3>
@@ -57,6 +60,7 @@ const Home = () => {
       </div>
     </section>
 
+
     <section className="home-section home-benefits improved-benefits-section">
       <h3 className="improved-benefits-title">Why Choose Radioception?</h3>
       <ul className="home-benefits-list improved-benefits-list">
@@ -68,6 +72,26 @@ const Home = () => {
       </ul>
     </section>
 
+
+    {/* Return and Refund Policy Section */}
+    <section className="home-section policy-section modern-policy-section dark-policy-section" style={{marginTop: '48px'}}>
+      <div className="dark-policy-inner">
+        <h2 className="policy-section-title white-policy-title">Return and Refund Policy</h2>
+        <p className="policy-section-text white-policy-text">
+          At Radioception, we strive to provide the highest quality AI-powered radiology services. Due to the digital and instant nature of our reports and subscriptions, all purchases are considered final and non-refundable once the service is delivered. If you experience any technical issues or believe you have been charged in error, please contact our support team within 24 hours. We are committed to resolving genuine concerns promptly and fairly.
+        </p>
+      </div>
+    </section>
+
+    {/* Terms and Conditions Section */}
+    <section className="home-section policy-section modern-policy-section dark-policy-section" style={{marginTop: '40px', marginBottom: '40px'}}>
+      <div className="dark-policy-inner">
+        <h2 className="policy-section-title white-policy-title">Terms and Conditions</h2>
+        <p className="policy-section-text white-policy-text">
+          By using Radioception, you agree to our terms: All uploaded images and generated reports are handled securely and confidentially. Our AI analysis is intended to assist, not replace, professional medical judgment. Users are responsible for the accuracy of uploaded data. Misuse of the platform, including unauthorized sharing or commercial redistribution, is strictly prohibited. For full details, please review our complete Terms and Conditions page.
+        </p>
+      </div>
+    </section>
 
     <ModernContactUs />
     <FAQSection />
