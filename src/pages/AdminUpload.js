@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import jsPDF from 'jspdf';
 import logo from '../assets/Images/new-logo.jpg'; // Correct path for logo
-import ReactMarkdown from 'react-markdown';
 import MedicalQuestionnaireForm from '../components/MedicalQuestionnaireForm';
 import axios from 'axios';
 import API_BASE_URL from '../utils/apiConfig';
@@ -45,63 +44,51 @@ const AdminUpload = () => {
       doc.setFillColor(255,255,255);
       doc.roundedRect(30, 90, 535, 700, 12, 12, 'F');
 
-      // Extract and clean the model text
+      // Use only rawResponse string for PDF
       let modelText = '';
-      try {
-        if (analysisResult.rawResponse) {
-          const raw = JSON.parse(analysisResult.rawResponse);
-          modelText = raw?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        }
-      } catch (e) {}
-      if (!modelText && analysisResult.result) modelText = analysisResult.result;
-      if (!modelText) modelText = JSON.stringify(analysisResult, null, 2);
+      if (analysisResult.rawResponse) {
+        modelText = analysisResult.rawResponse;
+      } else if (analysisResult.result) {
+        modelText = analysisResult.result;
+      } else {
+        modelText = JSON.stringify(analysisResult, null, 2);
+      }
 
-      // Replace all emoji/icons and markdown bullets with a simple bullet (•)
+      // Formatting: bold headings, new line for •, bullets
       modelText = modelText
-        .replace(/[🔹◆◇♦▪◦❖❑❒❏❐❯❱❲❳]/g, '•') // emoji/icons
-        .replace(/^\s*([-*+])\s+/gm, '• ') // markdown bullets
-        .replace(/\u2022/g, '•') // unicode bullet
-        // Remove duplicate bullets before headings
-        .replace(/(^|\n)•+\s*\*\*([^\n]+?)\*\*/g, '$1**$2**')
-        // Remove duplicate bullets before headings (for #, ##, etc)
-        .replace(/(^|\n)•+\s*#+\s*([^\n]+)/g, '$1$2')
-        // Remove any remaining non-ASCII characters (to avoid PDF corruption)
-        .replace(/[^\x20-\x7E\r\n•*]/g, '');
-
-      // Split into lines and print inside the content box
-      const lines = modelText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+        .replace(/(Report Summary:)/gi, '**$1**')
+        .replace(/(Key Findings:)/gi, '\n**$1**')
+        .replace(/(Clinical Impression:)/gi, '\n**$1**');
+      // Split on bullets and make a list
+      const parts = modelText.split(/\u2022|•/g);
       let y = 120;
-      const maxWidth = 495; // width of content box
-      for (let line of lines) {
-        // Detect markdown headings (bold or ##, #)
-        let isHeading = false;
-        let cleanLine = line;
-        // Bold headings: **Heading**
-        if (/^\*\*[^*]+\*\*$/.test(line)) {
-          isHeading = true;
-          cleanLine = line.replace(/^\*\*([^*]+)\*\*$/, '$1');
-        }
-        // Markdown # or ## heading
-        if (/^#+\s+/.test(line)) {
-          isHeading = true;
-          cleanLine = line.replace(/^#+\s+/, '');
-        }
-        const wrapped = doc.splitTextToSize(cleanLine, maxWidth);
-        for (let wline of wrapped) {
-          if (y > 770) {
-            doc.addPage();
-            y = 60;
-          }
-          if (isHeading) {
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(13);
+      const maxWidth = 495;
+      for (let i = 0; i < parts.length; i++) {
+        let text = parts[i].trim();
+        if (!text) continue;
+        // If it's a heading, render as bold
+        if (/^\*\*.*\*\*$/.test(text)) {
+          let cleanLine = text.replace(/\*\*/g, '');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(13);
+          const wrapped = doc.splitTextToSize(cleanLine, maxWidth);
+          for (let wline of wrapped) {
+            if (y > 770) { doc.addPage(); y = 60; }
             doc.text(wline, 60, y);
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(11);
-          } else {
-            doc.text(wline, 60, y);
+            y += 18;
           }
-          y += 18;
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(11);
+        } else {
+          // Bullet point
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(11);
+          const wrapped = doc.splitTextToSize(text, maxWidth - 18);
+          for (let wline of wrapped) {
+            if (y > 770) { doc.addPage(); y = 60; }
+            doc.text(`• ${wline}`, 60, y);
+            y += 18;
+          }
         }
       }
       doc.save('AI-Analysis-Report.pdf');
@@ -236,16 +223,41 @@ const AdminUpload = () => {
               <div className="card-body" ref={resultRef} style={{background:'#fff'}}>
                 {/* Parse and show model result if available */}
                 {(() => {
+                  // Handle new API response: { rawResponse: "..." }
                   let modelText = '';
-                  try {
-                    if (analysisResult.rawResponse) {
-                      const raw = JSON.parse(analysisResult.rawResponse);
-                      modelText = raw?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                  if (analysisResult.rawResponse) {
+                    modelText = analysisResult.rawResponse;
+                  } else if (analysisResult.result) {
+                    modelText = analysisResult.result;
+                  } else {
+                    modelText = JSON.stringify(analysisResult, null, 2);
+                  }
+
+                  // Formatting: bold headings, new line for •, bullets
+                  // 1. Bold headings (Report Summary, Key Findings, Clinical Impression)
+                  modelText = modelText
+                    .replace(/(Report Summary:)/gi, '**$1**')
+                    .replace(/(Key Findings:)/gi, '\n**$1**')
+                    .replace(/(Clinical Impression:)/gi, '\n**$1**');
+                  // 2. Split on bullets and make a list
+                  const parts = modelText.split(/\u2022|•/g);
+                  const formatted = [];
+                  for (let i = 0; i < parts.length; i++) {
+                    let text = parts[i].trim();
+                    if (!text) continue;
+                    // If it's a heading, render as paragraph
+                    if (/^\*\*.*\*\*$/.test(text)) {
+                      formatted.push(<p key={i} style={{fontWeight:'bold',marginBottom:8}}>{text.replace(/\*\*/g,'')}</p>);
+                    } else {
+                      formatted.push(
+                        <div key={i} style={{marginLeft:18,marginBottom:4}}>
+                          <span style={{color:'#ffd600',fontWeight:'bold',fontSize:'1.1em',marginRight:6}}>&#8226;</span>
+                          <span>{text}</span>
+                        </div>
+                      );
                     }
-                  } catch (e) {}
-                  if (!modelText && analysisResult.result) modelText = analysisResult.result;
-                  if (!modelText) modelText = JSON.stringify(analysisResult, null, 2);
-                  return <ReactMarkdown>{modelText}</ReactMarkdown>;
+                  }
+                  return <div>{formatted}</div>;
                 })()}
               </div>
             </div>
