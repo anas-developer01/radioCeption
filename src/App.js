@@ -25,6 +25,9 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import Disclaimer from './components/Disclaimer';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles/main.css';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 // Remove placeholder components, now using real ones
 const SignUp = () => <Register />;

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import jsPDF from 'jspdf';
-import logo from '../assets/Images/new-logo.jpg'; // Correct path for logo
+import logo from '../assets/Images/new-logo.jpg';
 import MedicalQuestionnaireForm from '../components/MedicalQuestionnaireForm';
 import axios from 'axios';
 import API_BASE_URL from '../utils/apiConfig';
@@ -14,9 +14,10 @@ const AdminUpload = () => {
   const [analysisResult, setAnalysisResult] = useState(null);
   const [error, setError] = useState(null);
   const resultRef = useRef();
-  // Download the visible result as PDF
+
+  // PDF Export
   const handleDownloadPdf = () => {
-    if (!analysisResult) return;
+    if (!analysisResult || !analysisResult.answer) return;
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
 
     // Draw a colored header bar
@@ -27,8 +28,7 @@ const AdminUpload = () => {
     const img = new window.Image();
     img.src = logo;
     img.onload = function () {
-      doc.addImage(img, 'PNG', 40, 11, 48, 48); // medium size
-      // White text for title
+      doc.addImage(img, 'PNG', 40, 11, 48, 48);
       doc.setTextColor(255,255,255);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
@@ -37,36 +37,27 @@ const AdminUpload = () => {
       doc.setFont('helvetica', 'normal');
       doc.text('Generated: ' + new Date().toLocaleString(), 400, 60);
 
-      // Reset text color for content
       doc.setTextColor(33,33,33);
-
-      // Draw a white rounded rectangle for the report content
       doc.setFillColor(255,255,255);
       doc.roundedRect(30, 90, 535, 700, 12, 12, 'F');
 
-      // Use only rawResponse string for PDF
-      let modelText = '';
-      if (analysisResult.rawResponse) {
-        modelText = analysisResult.rawResponse;
-      } else if (analysisResult.result) {
-        modelText = analysisResult.result;
-      } else {
-        modelText = JSON.stringify(analysisResult, null, 2);
-      }
-
-      // Formatting: bold headings, new line for •, bullets
+      let modelText = analysisResult.answer;
       modelText = modelText
-        .replace(/(Report Summary:)/gi, '**$1**')
-        .replace(/(Key Findings:)/gi, '\n**$1**')
-        .replace(/(Clinical Impression:)/gi, '\n**$1**');
-      // Split on bullets and make a list
-      const parts = modelText.split(/\u2022|•/g);
+        .replace(/(Overall Impression:)/gi, '**$1**')
+        .replace(/(Specific Observations:)/gi, '\n**$1**')
+        .replace(/(Heart Size:)/gi, '\n**$1**')
+        .replace(/(Lung Fields:)/gi, '\n**$1**')
+        .replace(/(Mediastinum:)/gi, '\n**$1**')
+        .replace(/(Bones:)/gi, '\n**$1**')
+        .replace(/(Diaphragm:)/gi, '\n**$1**')
+        .replace(/(Limitations:)/gi, '\n**$1**')
+        .replace(/(Disclaimer:)/gi, '\n**$1**');
+      const parts = modelText.split(/\u2022|•|\n\*/g);
       let y = 120;
       const maxWidth = 495;
       for (let i = 0; i < parts.length; i++) {
         let text = parts[i].trim();
         if (!text) continue;
-        // If it's a heading, render as bold
         if (/^\*\*.*\*\*$/.test(text)) {
           let cleanLine = text.replace(/\*\*/g, '');
           doc.setFont('helvetica', 'bold');
@@ -80,7 +71,6 @@ const AdminUpload = () => {
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(11);
         } else {
-          // Bullet point
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(11);
           const wrapped = doc.splitTextToSize(text, maxWidth - 18);
@@ -95,16 +85,14 @@ const AdminUpload = () => {
     };
   };
 
+  // API Call
   const handleFormSubmit = async (formData) => {
     setIsLoading(true);
     setError(null);
     setAnalysisResult(null);
 
     try {
-      // Create FormData for file upload
       const submitData = new FormData();
-
-      // 1. Prepare summary text from all form fields
       const summaryLines = [];
       if (formData.patientInfo) {
         Object.entries(formData.patientInfo).forEach(([k, v]) => summaryLines.push(`${k}: ${v}`));
@@ -129,29 +117,24 @@ const AdminUpload = () => {
       }
       const summaryText = summaryLines.join('\n');
 
-      // 2. Append fields for API
-      submitData.append('Text', summaryText);
+      submitData.append('question', summaryText);
       if (formData.xrayFile) {
-        submitData.append('Image', formData.xrayFile);
+        submitData.append('image', formData.xrayFile);
       }
 
-      // 3. Submit to VertexAiMedical API with userId as query param
       const auth = JSON.parse(localStorage.getItem('auth'));
       const userId = auth?.userId || auth?.id;
       const url = userId
-        ? `${API_BASE_URL}/api/VertexAiMedical/generate?userId=${userId}`
-        : `${API_BASE_URL}/api/VertexAiMedical/generate`;
+        ? `${API_BASE_URL}/api/MedGemma/analyze?userId=${userId}`
+        : `${API_BASE_URL}/api/MedGemma/analyze`;
       const response = await axios.post(url, submitData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        timeout: 60000, // 60 seconds timeout
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 100000,
       });
 
       if (response.data) {
         setAnalysisResult(response.data);
       }
-
     } catch (err) {
       console.error('Error submitting form:', err);
       if (err.response?.status === 400) {
@@ -159,8 +142,8 @@ const AdminUpload = () => {
         setShowLimitModal(true);
       } else {
         setError(
-          err.response?.data?.message || 
-          err.message || 
+          err.response?.data?.message ||
+          err.message ||
           'An error occurred while processing your request. Please try again.'
         );
       }
@@ -168,7 +151,6 @@ const AdminUpload = () => {
       setIsLoading(false);
     }
   };
-
 
   // Main render
   return (
@@ -203,13 +185,12 @@ const AdminUpload = () => {
                 Close
               </Button>
             </Modal.Footer>
-          </Modal> 
+          </Modal>
           {/* Questionnaire Form */}
-          <MedicalQuestionnaireForm 
-            onSubmit={handleFormSubmit} 
+          <MedicalQuestionnaireForm
+            onSubmit={handleFormSubmit}
             isLoading={isLoading}
           />
-
 
           {/* Analysis Result (below the form and loader) */}
           {analysisResult && (
@@ -220,38 +201,39 @@ const AdminUpload = () => {
                   <i className="bi bi-download me-1"></i>Download as PDF
                 </button>
               </div>
-              <div className="card-body" ref={resultRef} style={{background:'#fff'}}>
+              <div className="card-body" ref={resultRef} style={{ background: '#fff' }}>
                 {/* Parse and show model result if available */}
                 {(() => {
-                  // Handle new API response: { rawResponse: "..." }
                   let modelText = '';
-                  if (analysisResult.rawResponse) {
-                    modelText = analysisResult.rawResponse;
-                  } else if (analysisResult.result) {
-                    modelText = analysisResult.result;
+                  if (analysisResult && typeof analysisResult === 'object' && analysisResult.answer) {
+                    modelText = analysisResult.answer;
+                  } else if (typeof analysisResult === 'string') {
+                    modelText = analysisResult;
                   } else {
-                    modelText = JSON.stringify(analysisResult, null, 2);
+                    return <pre>{JSON.stringify(analysisResult, null, 2)}</pre>;
                   }
 
-                  // Formatting: bold headings, new line for •, bullets
-                  // 1. Bold headings (Report Summary, Key Findings, Clinical Impression)
                   modelText = modelText
-                    .replace(/(Report Summary:)/gi, '**$1**')
-                    .replace(/(Key Findings:)/gi, '\n**$1**')
-                    .replace(/(Clinical Impression:)/gi, '\n**$1**');
-                  // 2. Split on bullets and make a list
-                  const parts = modelText.split(/\u2022|•/g);
+                    .replace(/(Overall Impression:)/gi, '**$1**')
+                    .replace(/(Specific Observations:)/gi, '\n**$1**')
+                    .replace(/(Heart Size:)/gi, '\n**$1**')
+                    .replace(/(Lung Fields:)/gi, '\n**$1**')
+                    .replace(/(Mediastinum:)/gi, '\n**$1**')
+                    .replace(/(Bones:)/gi, '\n**$1**')
+                    .replace(/(Diaphragm:)/gi, '\n**$1**')
+                    .replace(/(Limitations:)/gi, '\n**$1**')
+                    .replace(/(Disclaimer:)/gi, '\n**$1**');
+                  const parts = modelText.split(/\u2022|•|\n\*/g);
                   const formatted = [];
                   for (let i = 0; i < parts.length; i++) {
                     let text = parts[i].trim();
                     if (!text) continue;
-                    // If it's a heading, render as paragraph
                     if (/^\*\*.*\*\*$/.test(text)) {
-                      formatted.push(<p key={i} style={{fontWeight:'bold',marginBottom:8}}>{text.replace(/\*\*/g,'')}</p>);
+                      formatted.push(<p key={i} style={{ fontWeight: 'bold', marginBottom: 8 }}>{text.replace(/\*\*/g, '')}</p>);
                     } else {
                       formatted.push(
-                        <div key={i} style={{marginLeft:18,marginBottom:4}}>
-                          <span style={{color:'#ffd600',fontWeight:'bold',fontSize:'1.1em',marginRight:6}}>&#8226;</span>
+                        <div key={i} style={{ marginLeft: 18, marginBottom: 4 }}>
+                          <span style={{ color: '#ffd600', fontWeight: 'bold', fontSize: '1.1em', marginRight: 6 }}>&#8226;</span>
                           <span>{text}</span>
                         </div>
                       );
@@ -281,11 +263,10 @@ const AdminUpload = () => {
               </ol>
             </div>
           </div>
-
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default AdminUpload;
